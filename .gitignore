@@ -1,0 +1,28 @@
+# ===== buildy CMake =====
+build/
+cmake-build-*/
+out/
+Debug/
+Release/
+
+# ===== Qt Creator =====
+*.user
+CMakeLists.txt.user
+.qt/
+
+# ===== IDE =====
+.vscode/
+.idea/
+
+# ===== system =====
+.DS_Store
+Thumbs.db
+
+# ===== binarki =====
+*.exe
+*.out
+*.o
+*.obj
+*.dll
+*.so
+*.a
