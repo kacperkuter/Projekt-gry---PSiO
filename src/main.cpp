@@ -1,4 +1,4 @@
-#include "Gra.cpp"
+#include "../include/gra.h"
 Gra game;
 int main(){
     while(game.isOpen()){

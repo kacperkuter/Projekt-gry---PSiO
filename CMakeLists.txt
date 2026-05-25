@@ -13,6 +13,9 @@ find_package(SFML 2.6 COMPONENTS graphics window system REQUIRED)
 add_executable(Projekt-gry---PSiO
     src/main.cpp
     src/Gra.cpp
+    include/menadzer_tekstur.h src/menadzer_tekstur.cpp
+    include/gra.h src/gra.cpp
+
 )
 
 # ---- include ----
