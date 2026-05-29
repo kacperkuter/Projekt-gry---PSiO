@@ -9,6 +9,8 @@ class Gra
 private:
     sf::RenderWindow gameWindow;
     sf::Sprite background;
+    sf::RenderTexture render;
+    sf::Sprite torch;
     Menadzer_tekstur texture_men;
 public:
     Gra();
