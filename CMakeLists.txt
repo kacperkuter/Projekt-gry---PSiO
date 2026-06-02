@@ -16,6 +16,9 @@ add_executable(Projekt-gry---PSiO
     include/menadzer_tekstur.h src/menadzer_tekstur.cpp
     include/gra.h src/gra.cpp
 
+    include/animatedsprite.h src/animatedsprite.cpp
+    include/levelmodule.h src/levelmodule.cpp
+
 
 
 )

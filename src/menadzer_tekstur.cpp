@@ -1,7 +1,7 @@
 
 #include "../include/menadzer_tekstur.h"
 Menadzer_tekstur::Menadzer_tekstur(){}
-void Menadzer_tekstur::set(TextureID object, const std::string& file){
+void Menadzer_tekstur::set(TextureID object, const std::string& file){ // ładuje teksturę z pliku
         std::unique_ptr<sf::Texture> texture = std::make_unique<sf::Texture>();
 
         if(texture->loadFromFile(file)){
@@ -18,13 +18,13 @@ void Menadzer_tekstur::set(TextureID object, sf::Texture a_texture){
         textures[object] = std::move(texture);
     }
 }
-sf::Texture& Menadzer_tekstur::load(TextureID id){
+sf::Texture& Menadzer_tekstur::load(TextureID id){ // oddaje wskaźnik do tekstury po ID
     if(textures[id]==nullptr){
         throw std::runtime_error("Brak przypisanej tekstury");
     }
     return *textures[id];
 }
-void Menadzer_tekstur::UpdateRender(
+void Menadzer_tekstur::UpdateRender( // element do przesuwania tła (do wykorzystania)
     sf::RenderTexture& target,
     const std::vector<TextureID>& row
     ){
@@ -77,7 +77,7 @@ void Menadzer_tekstur::UpdateRender(
 
     target.display();
 }
-sf::Texture Menadzer_tekstur::texturemap(float _windowsize_x,float _windowsize_y,
+sf::Texture Menadzer_tekstur::texturemap(float _windowsize_x,float _windowsize_y, // robi kafelki z tekstury do tła
                                          const std::vector<std::vector<TextureID>>& _mapinfo,
                                          std::pair<float,float> _tilesize ){
 

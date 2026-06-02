@@ -9,6 +9,7 @@ enum class TextureID{
     Player,
     GameWindow,
     Brick_tile,
+    Platform,
     Torch
 };
 
