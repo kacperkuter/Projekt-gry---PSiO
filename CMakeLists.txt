@@ -18,7 +18,8 @@ add_executable(Projekt-gry---PSiO
 
     include/animatedsprite.h src/animatedsprite.cpp
     include/levelmodule.h src/levelmodule.cpp
-
+    
+    include/gracz.h src/gracz.cpp
 
 
 )
