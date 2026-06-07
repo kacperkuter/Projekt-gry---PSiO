@@ -19,6 +19,7 @@ void Gra::renderOkna(){
     for(auto& a : levels){
         gameWindow.draw(*a);
     }
+    gameWindow.draw(gracz); 
     gameWindow.display();
 
 }
@@ -29,6 +30,9 @@ void Gra::handleEvents(){
         if (event.type == sf::Event::Closed)
             gameWindow.close();
     }
+    //======Poruszanie sie gracza======
+    gracz.obsluz_sterowanie();
+    gracz.aktualizuj(dt);
 
     { // porusza platfomami i dodaje nowy moduł platform u góry i gdy najniższy moduł zejdzie poniżej zadanej wartości
         if(!levels.empty()){
