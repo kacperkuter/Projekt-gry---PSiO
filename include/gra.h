@@ -5,6 +5,7 @@
 #include<SFML/Graphics.hpp>
 #include"menadzer_tekstur.h"
 #include"levelmodule.h"
+#include"gracz.h"
 class Gra
 {
 private:
@@ -16,6 +17,7 @@ private:
     sf::RenderTexture render;
     Menadzer_tekstur texture_men;
     std::list<std::unique_ptr<LevelModule>> levels;
+    Gracz gracz;
 public:
     Gra(int tilenumber);
     void renderOkna();
