@@ -8,8 +8,13 @@ Gra::Gra(int tilenumber) : gameWindow(sf::VideoMode(800, 920), "TowerCLIMB"), ti
     background.setTexture(texture_men.load(TextureID::GameWindow));
     render.create(gameWindow.getSize().x,gameWindow.getSize().y);
     texture_men.set(TextureID::Platform,"../../assets/wood1.jpg");
-levels = createLevels(9);
-zegar.restart();}
+    levels = createLevels(9);
+    for (auto& lvl : levels)
+    {
+        if (lvl)
+            generujPrzeciwnikowDlaModulu(*lvl);
+    }
+    zegar.restart();}
 
 void Gra::renderOkna(){
     gameWindow.clear();
@@ -19,6 +24,14 @@ void Gra::renderOkna(){
     for(auto& a : levels){
         gameWindow.draw(*a);
     }
+    
+    //rysowanie przeciwnika
+    for (auto& e : enemies)
+    {
+        if (e)
+            gameWindow.draw(*e);
+    }
+
     gameWindow.draw(gracz);
     gameWindow.display();
 
@@ -34,6 +47,12 @@ void Gra::handleEvents(){
     gracz.obsluz_sterowanie();
     gracz.aktualizuj(dt);
 
+    for (auto& e : enemies)
+    {
+        if (e)
+            e->aktualizuj(dt);
+    }
+
     { // porusza platfomami i dodaje nowy moduł platform u góry i gdy najniższy moduł zejdzie poniżej zadanej wartości
         if(!levels.empty()){
             for( auto& a : levels){
@@ -44,12 +63,14 @@ void Gra::handleEvents(){
             }
                 if(levels.begin()->get()->getBoundry().getPosition().y > gameWindow.getSize().y + 2*(levels.begin()->get()->getBoundry().getSize().y)){
                     levels.pop_front();
-                    levels.emplace_back(std::make_unique<LevelModule>(createLevel()));
+                    auto nowy_modul = std::make_unique<LevelModule>(createLevel());
+                    generujPrzeciwnikowDlaModulu(*nowy_modul);
+                    levels.emplace_back(std::move(nowy_modul));
                 }
         }
     }
 
-    // Wykrywanie kolizji z platformami
+    // kolizka z platforma
     sf::FloatRect gracz_box = gracz.pobierz_granice();
     for (auto& modul : levels)
     {
@@ -60,22 +81,24 @@ void Gra::handleEvents(){
                 sf::FloatRect platforma_box = platforma.getGlobalBounds();
                 if (gracz_box.intersects(platforma_box))
                 {
-                    // Obliczamy poprzednią dolną pozycję gracza przed ruchem w tej klatce
                     float poprzedni_spod = gracz_box.top + gracz_box.height - (gracz.pobierz_predkosc().y * dt);
                     
-                    // Jeśli gracz spadał i znajdował się powyżej platformy
                     if (gracz.pobierz_predkosc().y >= 0.f && poprzedni_spod <= platforma_box.top + 10.f)
                     {
-                        // Umieszczamy gracza na platformie
                         gracz.ustaw_pozycje(gracz_box.left, platforma_box.top - gracz_box.height);
                         gracz.wylacz_predkosc_y();
                         gracz.ustaw_na_ziemi(true);
-                        gracz_box = gracz.pobierz_granice(); // Aktualizacja boxa gracza
+                        gracz_box = gracz.pobierz_granice();
                     }
                 }
             }
         }
     }
+
+    // usun przeciwnika jezeli zejdzie ponizej ekranu
+    enemies.remove_if([this](const std::unique_ptr<Enemy>& e) {
+        return e && e->pobierz_granice().top > gameWindow.getSize().y;
+    });
 
 }
 LevelModule Gra::createLevel(const float& position){ // tworzy nowy moduł platform o losowym ustawieniu
@@ -100,4 +123,25 @@ std::list<std::unique_ptr<LevelModule>> Gra::createLevels(unsigned int nolevels)
     }
     return list;
 
+}
+
+void Gra::generujPrzeciwnikowDlaModulu(LevelModule& modul)
+{
+    //generuj przeciwnika z 30% szansy na platformie
+    for (const auto& platforma : modul.getPlatforms())
+    {
+        // 30% szansy na przeciwnika na danej platformie
+        if (rand() % 100 < 30)
+        {
+            sf::FloatRect bounds = platforma.getGlobalBounds();
+
+            float enemy_x = bounds.left + (bounds.width / 2.f) - 15.f;
+            float enemy_y = bounds.top - 45.f;
+            enemies.emplace_back(std::make_unique<Enemy>(
+                sf::Vector2f(enemy_x, enemy_y),
+                bounds.left,
+                bounds.left + bounds.width
+            ));
+        }
+    }
 }
