@@ -19,7 +19,7 @@ void Gra::renderOkna(){
     for(auto& a : levels){
         gameWindow.draw(*a);
     }
-    gameWindow.draw(gracz); 
+    gameWindow.draw(gracz);
     gameWindow.display();
 
 }
@@ -30,7 +30,7 @@ void Gra::handleEvents(){
         if (event.type == sf::Event::Closed)
             gameWindow.close();
     }
-    //======Poruszanie sie gracza======
+
     gracz.obsluz_sterowanie();
     gracz.aktualizuj(dt);
 
@@ -46,6 +46,34 @@ void Gra::handleEvents(){
                     levels.pop_front();
                     levels.emplace_back(std::make_unique<LevelModule>(createLevel()));
                 }
+        }
+    }
+
+    // Wykrywanie kolizji z platformami
+    sf::FloatRect gracz_box = gracz.pobierz_granice();
+    for (auto& modul : levels)
+    {
+        if (modul)
+        {
+            for (auto& platforma : modul->getPlatforms())
+            {
+                sf::FloatRect platforma_box = platforma.getGlobalBounds();
+                if (gracz_box.intersects(platforma_box))
+                {
+                    // Obliczamy poprzednią dolną pozycję gracza przed ruchem w tej klatce
+                    float poprzedni_spod = gracz_box.top + gracz_box.height - (gracz.pobierz_predkosc().y * dt);
+                    
+                    // Jeśli gracz spadał i znajdował się powyżej platformy
+                    if (gracz.pobierz_predkosc().y >= 0.f && poprzedni_spod <= platforma_box.top + 10.f)
+                    {
+                        // Umieszczamy gracza na platformie
+                        gracz.ustaw_pozycje(gracz_box.left, platforma_box.top - gracz_box.height);
+                        gracz.wylacz_predkosc_y();
+                        gracz.ustaw_na_ziemi(true);
+                        gracz_box = gracz.pobierz_granice(); // Aktualizacja boxa gracza
+                    }
+                }
+            }
         }
     }
 
