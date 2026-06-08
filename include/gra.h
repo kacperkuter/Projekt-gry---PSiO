@@ -6,6 +6,7 @@
 #include"menadzer_tekstur.h"
 #include"levelmodule.h"
 #include"gracz.h"
+#include"enemy.h"
 class Gra
 {
 private:
@@ -18,6 +19,8 @@ private:
     Menadzer_tekstur texture_men;
     std::list<std::unique_ptr<LevelModule>> levels;
     Gracz gracz;
+    std::list<std::unique_ptr<Enemy>> enemies;
+    void generujPrzeciwnikowDlaModulu(LevelModule& modul);
 public:
     Gra(int tilenumber);
     void renderOkna();
