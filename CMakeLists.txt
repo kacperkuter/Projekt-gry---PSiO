@@ -1,40 +1,37 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(Projekt-gry---PSiO)
+project(TOWER_OF_ASH)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
-
 # ---- SFML ----
-find_package(SFML 2.6 COMPONENTS graphics window system REQUIRED)
+set(SFML_DIR "C:/Users/kuter/Desktop/SFML-2.5.1/lib/cmake/SFML")
+find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
 
 # ---- pliki źródłowe ----
-add_executable(Projekt-gry---PSiO
+add_executable(TOWER_OF_ASH
     src/main.cpp
     src/Gra.cpp
     include/menadzer_tekstur.h src/menadzer_tekstur.cpp
-    include/gra.h src/gra.cpp
-
+    include/gra.h
     include/animatedsprite.h src/animatedsprite.cpp
     include/levelmodule.h src/levelmodule.cpp
-    
     include/gracz.h src/gracz.cpp
-
-
 )
 
 # ---- include ----
-target_link_libraries(Projekt-gry---PSiO PRIVATE
+target_link_libraries(TOWER_OF_ASH PRIVATE
     sfml-graphics
     sfml-window
     sfml-system
 )
-target_include_directories(Projekt-gry---PSiO PRIVATE
-    C:/SFML-2.6.2/include
+
+target_include_directories(TOWER_OF_ASH PRIVATE
+    include
+    ${SFML_INCLUDE_DIR}
 )
 
-# 5. Opcjonalne: Kopiowanie DLLek na Windowsie (tylko jeśli linkujesz dynamicznie)
+# Kopiowanie DLLek na Windowsie (tylko jeśli linkujesz dynamicznie)
 if(WIN32)
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
