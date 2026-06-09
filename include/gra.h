@@ -7,6 +7,7 @@
 #include"levelmodule.h"
 #include"gracz.h"
 #include"enemy.h"
+#include"pasek_boczny.h"
 class Gra
 {
 private:
@@ -15,8 +16,10 @@ private:
     inline static const unsigned szerokosc_okna_gry = 800;
     inline static const unsigned wysokosc_okna_gry = 920;
     inline static const unsigned szerokosc_paska_bocznego = 300;
+
     sf::Clock zegar;
     sf::RenderWindow gameWindow;
+    Pasek_boczny pasek_boczny;
     sf::Sprite background;
     sf::RenderTexture render;
     Menadzer_tekstur texture_men;

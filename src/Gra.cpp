@@ -1,6 +1,7 @@
 #include "../include/gra.h"
 #include<iostream>
-Gra::Gra(int tilenumber) : gameWindow(sf::VideoMode(szerokosc_okna_gry + szerokosc_paska_bocznego, wysokosc_okna_gry), "TowerCLIMB"), tilenumber(tilenumber)
+Gra::Gra(int tilenumber) : gameWindow(sf::VideoMode(szerokosc_okna_gry + szerokosc_paska_bocznego, wysokosc_okna_gry), "TowerCLIMB"), tilenumber(tilenumber),
+    pasek_boczny(sf::Vector2f(szerokosc_paska_bocznego,wysokosc_okna_gry),sf::Color(255,193,46))
 {texture_men.set(TextureID::Brick_tile,"../../assets/backgrnd_textr.png");
     texture_men.set(TextureID::Torch,"../../assets/torch.png");
     texture_men.set(TextureID::GameWindow,texture_men.texturemap(szerokosc_okna_gry,wysokosc_okna_gry,
@@ -14,6 +15,7 @@ Gra::Gra(int tilenumber) : gameWindow(sf::VideoMode(szerokosc_okna_gry + szeroko
         if (lvl)
             generujPrzeciwnikowDlaModulu(*lvl);
     }
+    pasek_boczny.setPozycja(sf::Vector2f(szerokosc_okna_gry,0));
     zegar.restart();}
 
 void Gra::renderOkna(){
@@ -37,6 +39,7 @@ void Gra::renderOkna(){
     gameWindow.clear();
     sf::Sprite oknogry(render.getTexture());
     gameWindow.draw(oknogry);
+    gameWindow.draw(pasek_boczny);
     gameWindow.display();
 
 }
