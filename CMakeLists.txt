@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # ---- SFML ----
-find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
+find_package(SFML 2.6 COMPONENTS graphics window system REQUIRED)
 
 # ---- pliki źródłowe ----
 add_executable(TOWER_OF_ASH
@@ -16,6 +16,7 @@ add_executable(TOWER_OF_ASH
     include/animatedsprite.h src/animatedsprite.cpp
     include/levelmodule.h src/levelmodule.cpp
     include/gracz.h src/gracz.cpp
+    include/enemy.h src/enemy.cpp
 )
 
 # ---- include ----

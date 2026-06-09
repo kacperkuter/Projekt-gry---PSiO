@@ -12,6 +12,9 @@ class Gra
 private:
     int tilenumber = 0;
     float predkosc_poziomu = 50;
+    inline static const unsigned szerokosc_okna_gry = 800;
+    inline static const unsigned wysokosc_okna_gry = 920;
+    inline static const unsigned szerokosc_paska_bocznego = 300;
     sf::Clock zegar;
     sf::RenderWindow gameWindow;
     sf::Sprite background;
