@@ -1,12 +1,16 @@
 #include "../include/gra.h"
 #include<iostream>
-Gra::Gra(int tilenumber) : gameWindow(sf::VideoMode(800, 920), "TowerCLIMB"), tilenumber(tilenumber)
-{texture_men.set(TextureID::Brick_tile,"../../assets/backgrnd_textr.png");
+#include<algorithm>
+
+Gra::Gra(int tilenumber) : gameWindow(sf::VideoMode(szerokosc_okna_gry + szerokosc_paska_bocznego, wysokosc_okna_gry), "TowerCLIMB"), tilenumber(tilenumber),
+    pasek_boczny(sf::Vector2f(szerokosc_paska_bocznego,wysokosc_okna_gry),sf::Color(255,193,46))
+{
+    texture_men.set(TextureID::Brick_tile,"../../assets/backgrnd_textr.png");
     texture_men.set(TextureID::Torch,"../../assets/torch.png");
-    texture_men.set(TextureID::GameWindow,texture_men.texturemap(gameWindow.getSize().x,gameWindow.getSize().y,
+    texture_men.set(TextureID::GameWindow,texture_men.texturemap(szerokosc_okna_gry,wysokosc_okna_gry,
     std::vector<std::vector<TextureID>>(tilenumber,std::vector<TextureID>(tilenumber, TextureID::Brick_tile)),std::make_pair(0.f,0.f)));
     background.setTexture(texture_men.load(TextureID::GameWindow));
-    render.create(gameWindow.getSize().x,gameWindow.getSize().y);
+    render.create(szerokosc_okna_gry,wysokosc_okna_gry);
     texture_men.set(TextureID::Platform,"../../assets/wood1.jpg");
     levels = createLevels(9);
     for (auto& lvl : levels)
@@ -14,28 +18,47 @@ Gra::Gra(int tilenumber) : gameWindow(sf::VideoMode(800, 920), "TowerCLIMB"), ti
         if (lvl)
             generujPrzeciwnikowDlaModulu(*lvl);
     }
-    zegar.restart();}
+    pasek_boczny.setPozycja(sf::Vector2f(szerokosc_okna_gry,0));
+    leaderboard.add_wynik("player",200);
+    leaderboard.add_wynik("player 2",100);
+    pasek_boczny.setWynik(leaderboard.get_as_string());
+    zegar.restart();
+}
 
 void Gra::renderOkna(){
-    gameWindow.clear();
+    render.clear();
 
-
-    gameWindow.draw(background);
+    render.draw(background);
     for(auto& a : levels){
-        gameWindow.draw(*a);
+        render.draw(*a);
     }
     
-    //rysowanie przeciwnika
+    // rysowanie przeciwnika
     for (auto& e : enemies)
     {
         if (e)
-            gameWindow.draw(*e);
+            render.draw(*e);
     }
+    /* ===============
+     * FRAGMENT ZWIAZANY Z POCISKIEM NAD KTORYM TRWAJA JESZCZE PRACE
+     * ===============
+    // rysowanie pociskow
+    for (auto& p : pociski)
+    {
+        if (p)
+            render.draw(*p);
+    }
+    */
+    render.draw(gracz);
+    render.display();
 
-    gameWindow.draw(gracz);
+    gameWindow.clear();
+    sf::Sprite oknogry(render.getTexture());
+    gameWindow.draw(oknogry);
+    gameWindow.draw(pasek_boczny);
     gameWindow.display();
-
 }
+
 void Gra::handleEvents(){
     float dt = zegar.restart().asSeconds();
     sf::Event event;
@@ -50,8 +73,23 @@ void Gra::handleEvents(){
     for (auto& e : enemies)
     {
         if (e)
-            e->aktualizuj(dt);
+            e->aktualizuj(dt, gracz.pobierz_pozycje(), pociski);
     }
+
+    // aktualizacja pociskow
+    for (auto& p : pociski)
+    {
+        if (p)
+            p->aktualizuj(dt);
+    }
+    /* ===============
+     * FRAGMENT ZWIAZANY Z POCISKIEM NAD KTORYM TRWAJA JESZCZE PRACE
+     * ===============
+    // usuwanie pociskow poza ekranem
+    pociski.erase(std::remove_if(pociski.begin(), pociski.end(), [this](const std::unique_ptr<Pocisk>& p) {
+        return !p || p->pobierz_granice().top > wysokosc_okna_gry || p->pobierz_granice().top + p->pobierz_granice().height < 0.f;
+    }), pociski.end());
+    */
 
     { // porusza platfomami i dodaje nowy moduł platform u góry i gdy najniższy moduł zejdzie poniżej zadanej wartości
         if(!levels.empty()){
@@ -61,7 +99,7 @@ void Gra::handleEvents(){
 
                 }
             }
-                if(levels.begin()->get()->getBoundry().getPosition().y > gameWindow.getSize().y + 2*(levels.begin()->get()->getBoundry().getSize().y)){
+                if(levels.begin()->get()->getBoundry().getPosition().y > wysokosc_okna_gry + 2*(levels.begin()->get()->getBoundry().getSize().y)){
                     levels.pop_front();
                     auto nowy_modul = std::make_unique<LevelModule>(createLevel());
                     generujPrzeciwnikowDlaModulu(*nowy_modul);
@@ -97,10 +135,11 @@ void Gra::handleEvents(){
 
     // usun przeciwnika jezeli zejdzie ponizej ekranu
     enemies.remove_if([this](const std::unique_ptr<Enemy>& e) {
-        return e && e->pobierz_granice().top > gameWindow.getSize().y;
+        return e && e->pobierz_granice().top > wysokosc_okna_gry;
     });
 
 }
+
 LevelModule Gra::createLevel(const float& position){ // tworzy nowy moduł platform o losowym ustawieniu
     std::vector<bool> platforms;
     for(int i = 0;i < tilenumber; ++i){
@@ -113,21 +152,20 @@ LevelModule Gra::createLevel(const float& position){ // tworzy nowy moduł platf
     }
     std::cout<<std::endl;
 
-    return LevelModule(sf::Vector2f(gameWindow.getSize().x,gameWindow.getSize().y/tilenumber),&texture_men.load(TextureID::Platform),&texture_men.load(TextureID::Torch),sf::IntRect(0,0,32,32),platforms,position);
-    ;
+    return LevelModule(sf::Vector2f(szerokosc_okna_gry,wysokosc_okna_gry/tilenumber),&texture_men.load(TextureID::Platform),&texture_men.load(TextureID::Torch),sf::IntRect(0,0,32,32),platforms,position);
 }
+
 std::list<std::unique_ptr<LevelModule>> Gra::createLevels(unsigned int nolevels){ // tworzy n początkowych modułów platform
     std::list<std::unique_ptr<LevelModule>> list;
     for(unsigned int i = 0; i < nolevels; ++i){
         list.emplace_front(std::make_unique<LevelModule>(createLevel(i)));
     }
     return list;
-
 }
 
 void Gra::generujPrzeciwnikowDlaModulu(LevelModule& modul)
 {
-    //generuj przeciwnika z 30% szansy na platformie
+    // generuj przeciwnika z 30% szansy na platformie
     for (const auto& platforma : modul.getPlatforms())
     {
         // 30% szansy na przeciwnika na danej platformie
@@ -140,7 +178,8 @@ void Gra::generujPrzeciwnikowDlaModulu(LevelModule& modul)
             enemies.emplace_back(std::make_unique<Enemy>(
                 sf::Vector2f(enemy_x, enemy_y),
                 bounds.left,
-                bounds.left + bounds.width
+                bounds.left + bounds.width,
+                TypPrzeciwnika::Goblin
             ));
         }
     }
