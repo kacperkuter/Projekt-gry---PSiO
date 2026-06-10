@@ -7,19 +7,29 @@
 #include"levelmodule.h"
 #include"gracz.h"
 #include"enemy.h"
+#include"pocisk.h"
+#include"pasek_boczny.h"
+#include"leaderboard.h"
 class Gra
 {
 private:
     int tilenumber = 0;
     float predkosc_poziomu = 50;
+    inline static const unsigned szerokosc_okna_gry = 800;
+    inline static const unsigned wysokosc_okna_gry = 920;
+    inline static const unsigned szerokosc_paska_bocznego = 300;
+
     sf::Clock zegar;
     sf::RenderWindow gameWindow;
+    Pasek_boczny pasek_boczny;
+    Leaderboard leaderboard;
     sf::Sprite background;
     sf::RenderTexture render;
     Menadzer_tekstur texture_men;
     std::list<std::unique_ptr<LevelModule>> levels;
     Gracz gracz;
     std::list<std::unique_ptr<Enemy>> enemies;
+    std::vector<std::unique_ptr<Pocisk>> pociski;
     void generujPrzeciwnikowDlaModulu(LevelModule& modul);
 public:
     Gra(int tilenumber);
@@ -31,7 +41,3 @@ public:
 };
 
 #endif // GRA_H
-
-
-
-
