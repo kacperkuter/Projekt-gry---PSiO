@@ -14,6 +14,12 @@ Gracz::Gracz()
     czy_na_ziemi = false;
     grawitacja = 700.f;     // sila sciagania w dol
     sila_skoku = 480.f;     // Siła skoku w górę
+
+    // Inicjalizacja statystyk gracza (życie, obrażenia wręcz, obrażenia na odległość)
+    maks_punkty_zycia = 100;
+    punkty_zycia = maks_punkty_zycia;
+    obrazenia_wrecz = 20;
+    obrazenia_dystansowe = 15;
 }
 
 void Gracz::obsluz_sterowanie()
