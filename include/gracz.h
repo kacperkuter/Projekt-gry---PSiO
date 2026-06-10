@@ -10,12 +10,17 @@ private:
     sf::Vector2f predkosc;
     float szybkosc_ruchu;
     
-    // Zmienne fizyczne
+    //zmienne do poruszania sie
     bool czy_na_ziemi;
     float grawitacja;
     float sila_skoku;
 
-    // Metoda wymagana przez sf::Drawable do rysowania gracza na ekranie
+    // Statystyki / cechy gracza
+    int punkty_zycia;
+    int maks_punkty_zycia;
+    int obrazenia_wrecz;
+    int obrazenia_dystansowe;
+
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 public:
@@ -23,7 +28,14 @@ public:
     void aktualizuj(float dt);
     void obsluz_sterowanie();
 
-    // Gettery i settery do fizyki i kolizji
+    // Statystyki i walka
+    int pobierz_hp() const { return punkty_zycia; }
+    int pobierz_maks_hp() const { return maks_punkty_zycia; }
+    int pobierz_obrazenia_wrecz() const { return obrazenia_wrecz; }
+    int pobierz_obrazenia_dystansowe() const { return obrazenia_dystansowe; }
+    void otrzymaj_obrazenia(int ile) { punkty_zycia -= ile; if (punkty_zycia < 0) punkty_zycia = 0; }
+    void ulecz(int ile) { punkty_zycia += ile; if (punkty_zycia > maks_punkty_zycia) punkty_zycia = maks_punkty_zycia; }
+
     sf::FloatRect pobierz_granice() const { return ksztalt.getGlobalBounds(); }
     void ustaw_pozycje(float x, float y) { ksztalt.setPosition(x, y); }
     sf::Vector2f pobierz_pozycje() const { return ksztalt.getPosition(); }
