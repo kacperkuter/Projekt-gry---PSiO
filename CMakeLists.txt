@@ -18,6 +18,7 @@ add_executable(TOWER_OF_ASH
     include/gracz.h src/gracz.cpp
     include/enemy.h src/enemy.cpp
     include/pasek_boczny.h src/pasek_boczny.cpp
+    include/leaderboard.h src/leaderboard.cpp
 )
 
 # ---- include ----

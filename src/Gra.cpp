@@ -16,6 +16,9 @@ Gra::Gra(int tilenumber) : gameWindow(sf::VideoMode(szerokosc_okna_gry + szeroko
             generujPrzeciwnikowDlaModulu(*lvl);
     }
     pasek_boczny.setPozycja(sf::Vector2f(szerokosc_okna_gry,0));
+    leaderboard.add_wynik("player",200);
+    leaderboard.add_wynik("player 2",100);
+    pasek_boczny.setWynik(leaderboard.get_as_string());
     zegar.restart();}
 
 void Gra::renderOkna(){
@@ -113,6 +116,7 @@ LevelModule Gra::createLevel(const float& position){ // tworzy nowy moduł platf
     for(int i = 0;i < tilenumber; ++i){
         platforms.emplace_back(rand()%2);
     }
+    //TODO: Zmiana logiki na min 3 platfomy tworzone
     if(std::all_of(platforms.begin(),platforms.end(),[](const auto& a){return a!=true;})){ platforms[rand()%tilenumber] = 1; }
     else if(std::all_of(platforms.begin(),platforms.end(),[](const auto & a){return a==true;})){ platforms[rand()%tilenumber] = 0; }
     for(auto p : platforms){

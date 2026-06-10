@@ -8,6 +8,7 @@
 #include"gracz.h"
 #include"enemy.h"
 #include"pasek_boczny.h"
+#include"leaderboard.h"
 class Gra
 {
 private:
@@ -20,6 +21,7 @@ private:
     sf::Clock zegar;
     sf::RenderWindow gameWindow;
     Pasek_boczny pasek_boczny;
+    Leaderboard leaderboard;
     sf::Sprite background;
     sf::RenderTexture render;
     Menadzer_tekstur texture_men;
