@@ -53,6 +53,10 @@ void Gra::renderOkna(){
     gameWindow.clear();
     sf::Sprite oknogry(render.getTexture());
     gameWindow.draw(oknogry);
+
+    // Aktualizacja paska HP
+    pasek_boczny.aktualizujHP(gracz.pobierz_hp(), gracz.pobierz_maks_hp());
+
     gameWindow.draw(pasek_boczny);
     gameWindow.display();
 }
@@ -94,20 +98,15 @@ z platforma co pozwala zeby pociski przez nia nie przelatywaly i sie nei stackow
     ========================================================================
     */
 
-    /*
-    ========================================================================
-    STARE USUWANIE POCISKÓW WRAZ Z KOLIZJAMI Z PLATFORMAMI (ZAKOMENTOWANE ZGODNIE Z ZALECENIEM)
-    Ten kod usuwał pociski przy wyjściu za ekran oraz po zderzeniu z platformami.
-    ========================================================================
-    // usuwanie pociskow (poza ekranem oraz przy kolizji z platformami)
+    // usuwanie pociskow (poza ekranem, kolizja z platformami, kolizja z graczem)
     pociski.erase(std::remove_if(pociski.begin(), pociski.end(), [this](const std::unique_ptr<Pocisk>& p) {
         if (!p) return true;
 
-        // 1. Warunek wyjścia poza ekran
+        //Warunek wyjścia poza ekran
         if (p->pobierz_granice().top > wysokosc_okna_gry || p->pobierz_granice().top + p->pobierz_granice().height < 0.f)
             return true;
 
-        // 2. Warunek kolizji z platformami
+        // Warunek kolizji z platformami
         sf::FloatRect pocisk_box = p->pobierz_granice();
         for (const auto& modul : levels)
         {
@@ -123,39 +122,10 @@ z platforma co pozwala zeby pociski przez nia nie przelatywaly i sie nei stackow
             }
         }
 
-        return false;
-    }), pociski.end());
-    ========================================================================
-    */
-
-    // usuwanie pociskow (poza ekranem, kolizja z platformami, kolizja z graczem)
-    pociski.erase(std::remove_if(pociski.begin(), pociski.end(), [this](const std::unique_ptr<Pocisk>& p) {
-        if (!p) return true;
-
-        // 1. Warunek wyjścia poza ekran
-        if (p->pobierz_granice().top > wysokosc_okna_gry || p->pobierz_granice().top + p->pobierz_granice().height < 0.f)
-            return true;
-
-        // 2. Warunek kolizji z platformami
-        sf::FloatRect pocisk_box = p->pobierz_granice();
-        for (const auto& modul : levels)
-        {
-            if (modul)
-            {
-                for (const auto& platforma : modul->getPlatforms())
-                {
-                    if (pocisk_box.intersects(platforma.getGlobalBounds()))
-                    {
-                        return true; // kolizja z platformą - usuń pocisk
-                    }
-                }
-            }
-        }
-
         if (pocisk_box.intersects(gracz.pobierz_granice()))
         {
-            gracz.otrzymaj_obrazenia(10); // Obrażenia od pocisku szkieleta
-            return true; // kolizja z graczem - usuń pocisk
+            gracz.otrzymaj_obrazenia(10);
+            return true; // kolizja z graczem
         }
 
         return false;
@@ -252,7 +222,7 @@ void Gra::generujPrzeciwnikowDlaModulu(LevelModule& modul)
     // generuj przeciwnika z 30% szansy na platformie
     for (const auto& platforma : modul.getPlatforms())
     {
-        // 30% szansy na przeciwnika na danej platformie
+
         if (rand() % 100 < 30)
         {
             sf::FloatRect bounds = platforma.getGlobalBounds();
