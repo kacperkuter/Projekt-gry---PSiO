@@ -81,9 +81,44 @@ void Gra::handleEvents(){
             p->aktualizuj(dt);
     }
 
+    /*
+    ========================================================================
+    STARE USUWANIE POCISKÓW
+    Usuwal pocisk kiedy wyleci za ekran, kod zostal updateowany zeby usuwal pocisk przy zderzeniu
+z platforma co pozwala zeby pociski przez nia nie przelatywaly i sie nei stackowaly na gracza
+    ========================================================================
     // usuwanie pociskow poza ekranem
     pociski.erase(std::remove_if(pociski.begin(), pociski.end(), [this](const std::unique_ptr<Pocisk>& p) {
         return !p || p->pobierz_granice().top > wysokosc_okna_gry || p->pobierz_granice().top + p->pobierz_granice().height < 0.f;
+    }), pociski.end());
+    ========================================================================
+    */
+
+    // usuwanie pociskow (poza ekranem oraz przy kolizji z platformami)
+    pociski.erase(std::remove_if(pociski.begin(), pociski.end(), [this](const std::unique_ptr<Pocisk>& p) {
+        if (!p) return true;
+
+        // pocisk wylatuje za ekran
+        if (p->pobierz_granice().top > wysokosc_okna_gry || p->pobierz_granice().top + p->pobierz_granice().height < 0.f)
+            return true;
+
+        //kolizja z platformami
+        sf::FloatRect pocisk_box = p->pobierz_granice();
+        for (const auto& modul : levels)
+        {
+            if (modul)
+            {
+                for (const auto& platforma : modul->getPlatforms())
+                {
+                    if (pocisk_box.intersects(platforma.getGlobalBounds()))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }), pociski.end());
 
 
@@ -104,7 +139,7 @@ void Gra::handleEvents(){
         }
     }
 
-    // kolizka z platforma
+    // kolizja z platforma
     sf::FloatRect gracz_box = gracz.pobierz_granice();
     for (auto& modul : levels)
     {
