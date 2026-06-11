@@ -68,4 +68,28 @@ public:
     int pobierz_obrazenia() const { return obrazenia; }
 };
 
+//Goblin(czerwony)
+class Goblin : public Enemy
+{
+public:
+    Goblin(sf::Vector2f pozycja_startowa, float lewa_krawedz, float prawa_krawedz);
+    void aktualizuj(float dt, sf::Vector2f pozycja_gracza, std::vector<std::unique_ptr<Pocisk>>& pociski) override;
+};
+
+//Szkielet(niebieski)
+class Szkielet : public Enemy
+{
+private:
+    float czas_strzalu;
+    float cooldown_strzalu;
+
+public:
+    Szkielet(sf::Vector2f pozycja_startowa, float lewa_krawedz, float prawa_krawedz);
+    void aktualizuj(float dt, sf::Vector2f pozycja_gracza, std::vector<std::unique_ptr<Pocisk>>& pociski) override;
+};
+
+//===========================
+//w planach jeszcze nietoperz, ale zobaczymy jak czasowo
+//===========================
+
 #endif // ENEMY_H
