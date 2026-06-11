@@ -39,16 +39,14 @@ void Gra::renderOkna(){
         if (e)
             render.draw(*e);
     }
-    /* ===============
-     * FRAGMENT ZWIAZANY Z POCISKIEM NAD KTORYM TRWAJA JESZCZE PRACE
-     * ===============
+
     // rysowanie pociskow
     for (auto& p : pociski)
     {
         if (p)
             render.draw(*p);
     }
-    */
+
     render.draw(gracz);
     render.display();
 
@@ -82,14 +80,12 @@ void Gra::handleEvents(){
         if (p)
             p->aktualizuj(dt);
     }
-    /* ===============
-     * FRAGMENT ZWIAZANY Z POCISKIEM NAD KTORYM TRWAJA JESZCZE PRACE
-     * ===============
+
     // usuwanie pociskow poza ekranem
     pociski.erase(std::remove_if(pociski.begin(), pociski.end(), [this](const std::unique_ptr<Pocisk>& p) {
         return !p || p->pobierz_granice().top > wysokosc_okna_gry || p->pobierz_granice().top + p->pobierz_granice().height < 0.f;
     }), pociski.end());
-    */
+
 
     { // porusza platfomami i dodaje nowy moduł platform u góry i gdy najniższy moduł zejdzie poniżej zadanej wartości
         if(!levels.empty()){
@@ -175,12 +171,34 @@ void Gra::generujPrzeciwnikowDlaModulu(LevelModule& modul)
 
             float enemy_x = bounds.left + (bounds.width / 2.f) - 15.f;
             float enemy_y = bounds.top - 45.f;
+            /*
+            ==========================================
+            STARA GENERACJA PRZECIWNIKA
+            =============================================
             enemies.emplace_back(std::make_unique<Enemy>(
                 sf::Vector2f(enemy_x, enemy_y),
                 bounds.left,
                 bounds.left + bounds.width,
                 TypPrzeciwnika::Goblin
             ));
+            ===========================================
+            */
+            if (rand() % 2 == 0)
+            {
+                enemies.emplace_back(std::make_unique<Goblin>(
+                    sf::Vector2f(enemy_x, enemy_y),
+                    bounds.left,
+                    bounds.left + bounds.width
+                ));
+            }
+            else
+            {
+                enemies.emplace_back(std::make_unique<Szkielet>(
+                    sf::Vector2f(enemy_x, enemy_y),
+                    bounds.left,
+                    bounds.left + bounds.width
+                ));
+            }
         }
     }
 }
