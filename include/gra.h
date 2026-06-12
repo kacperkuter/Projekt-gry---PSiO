@@ -7,7 +7,7 @@
 #include"levelmodule.h"
 #include"gracz.h"
 #include"enemy.h"
-//#include"pocisk.h"
+#include"pocisk.h"
 #include"pasek_boczny.h"
 #include"leaderboard.h"
 #include"przyciskstart.h"
@@ -64,7 +64,7 @@ private:
     std::list<std::unique_ptr<LevelModule>> levels;
     Gracz gracz;
     std::list<std::unique_ptr<Enemy>> enemies;
-    //  std::vector<std::unique_ptr<Pocisk>> pociski;
+    std::vector<std::unique_ptr<Pocisk>> pociski;
     void generujPrzeciwnikowDlaModulu(LevelModule& modul);
 };
 #endif // GRA_H

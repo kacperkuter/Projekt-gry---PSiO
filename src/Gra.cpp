@@ -242,11 +242,11 @@ void Gra::updateGameplay(float dt){
     for (auto& e : enemies)
     {
         if (e)
-            e->aktualizuj(dt/*, gracz.pobierz_pozycje(), pociski*/);
+            e->aktualizuj(dt, gracz.pobierz_pozycje(), pociski);
     }
 
     // aktualizacja pociskow
-    /*for (auto& p : pociski)
+    for (auto& p : pociski)
     {
         if (p)
             p->aktualizuj(dt);
@@ -359,6 +359,9 @@ z platforma co pozwala zeby pociski przez nia nie przelatywaly i sie nei stackow
     enemies.remove_if([this](const std::unique_ptr<Enemy>& e) {
         return e && e->pobierz_granice().top > wysokosc_okna_gry;
     });
+    if(gracz.pobierz_hp() <= 0){
+        gameOver();
+    }
 }
 
 void Gra::generujPrzeciwnikowDlaModulu(LevelModule& modul)
