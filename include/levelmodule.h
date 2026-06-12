@@ -23,6 +23,7 @@ public:
     void Move(const sf::Vector2f& offset);
     void setPlatforms(const sf::Texture* platform_texture, const std::vector<bool>& platforms_placement);
     void setTorches(const sf::Texture* torches_texture, const sf::IntRect torches_frame);
+    void animate();
 
 private:
     sf::RectangleShape boundry;

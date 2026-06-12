@@ -5,7 +5,7 @@ Gracz::Gracz()
     //prostokat jako gracz
     ksztalt.setSize(sf::Vector2f(40.f, 60.f));
     ksztalt.setFillColor(sf::Color::Green);
-    ksztalt.setPosition(380.f, 700.f); // Pozycja startowa
+    ksztalt.setPosition(380.f, 840.f); // Pozycja startowa
 
     szybkosc_ruchu = 250.f; // Prędkość poruszania się gracza lewo/prawo
     predkosc = sf::Vector2f(0.f, 0.f);

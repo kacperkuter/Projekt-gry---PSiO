@@ -15,7 +15,11 @@ LevelModule::LevelModule(const sf::Vector2f& size
     boundry.setPosition(0,position*boundry.getSize().y-boundry.getSize().y);
     setPlatforms(platform_texture,platform_placement);
     setTorches(torches_texture,torches_frame);}
-
+void LevelModule::animate(){
+    for(auto& a : torches){
+        a.AnimationStep();
+    }
+}
 void LevelModule::setPlatforms(const sf::Texture* platform_texture,const std::vector<bool>& platforms_placement){
     //Ustawia platformy według klucza platforms_placement
     //TO DO (zamienić generowanie kilku platform obok siebie na jedną?):
@@ -55,11 +59,12 @@ void LevelModule::setTorches(const sf::Texture* torches_texture,const sf::IntRec
     //ustaiwa pochodnie w losowych miejscach na szerokości modułu
     torches.clear();
     sf::Vector2f size((32.f/128.f)*boundry.getSize().y,(32.f/100.f)*boundry.getSize().y);
-    AnimatedSprite temp(*torches_texture,torches_frame);
+    AnimatedSprite temp(*torches_texture);
     temp.setScale(
          size.x / torches_frame.width,
          size.y / torches_frame.height
         );
+    temp.setTextureRect(torches_frame);
     int number =  boundry.getSize().x / size.x;
     for(int a = 0; a < number;++a){
         if(rand()%7 == 0){
