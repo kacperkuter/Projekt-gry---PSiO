@@ -15,11 +15,12 @@ Gracz::Gracz()
     grawitacja = 700.f;     // sila sciagania w dol
     sila_skoku = 480.f;     // Siła skoku w górę
 
-    // Inicjalizacja statystyk gracza (życie, obrażenia wręcz, obrażenia na odległość)
+    //cechy gracza z wartosciami
     maks_punkty_zycia = 100;
     punkty_zycia = maks_punkty_zycia;
     obrazenia_wrecz = 20;
     obrazenia_dystansowe = 15;
+
 }
 
 void Gracz::obsluz_sterowanie()
@@ -46,6 +47,8 @@ void Gracz::obsluz_sterowanie()
 
 void Gracz::aktualizuj(float dt)
 {
+
+
     // grawitacja jezeli w powietrzu
     if (!czy_na_ziemi)
     {
@@ -98,6 +101,5 @@ void Gracz::aktualizuj(float dt)
 
 void Gracz::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-
     target.draw(ksztalt, states);
 }

@@ -39,16 +39,14 @@ void Gra::renderOkna(){
         if (e)
             render.draw(*e);
     }
-    /* ===============
-     * FRAGMENT ZWIAZANY Z POCISKIEM NAD KTORYM TRWAJA JESZCZE PRACE
-     * ===============
+
     // rysowanie pociskow
     for (auto& p : pociski)
     {
         if (p)
             render.draw(*p);
     }
-    */
+
     render.draw(gracz);
     if(stan == stanGry::Menu){render.draw(przyciskStart);}
     if(stan == stanGry::GameOver)
@@ -77,6 +75,10 @@ void Gra::renderOkna(){
     gameWindow.clear();
     sf::Sprite oknogry(render.getTexture());
     gameWindow.draw(oknogry);
+
+    // Aktualizacja paska HP
+    pasek_boczny.aktualizujHP(gracz.pobierz_hp(), gracz.pobierz_maks_hp());
+
     gameWindow.draw(pasek_boczny);
     gameWindow.display();
 }
@@ -248,15 +250,54 @@ void Gra::updateGameplay(float dt){
     {
         if (p)
             p->aktualizuj(dt);
-    }*/
-    /* ===============
-     * FRAGMENT ZWIAZANY Z POCISKIEM NAD KTORYM TRWAJA JESZCZE PRACE
-     * ===============
+    }
+
+    /*
+    ========================================================================
+    STARE USUWANIE POCISKÓW
+    Usuwal pocisk kiedy wyleci za ekran, kod zostal updateowany zeby usuwal pocisk przy zderzeniu
+z platforma co pozwala zeby pociski przez nia nie przelatywaly i sie nei stackowaly na gracza
+    ========================================================================
     // usuwanie pociskow poza ekranem
     pociski.erase(std::remove_if(pociski.begin(), pociski.end(), [this](const std::unique_ptr<Pocisk>& p) {
         return !p || p->pobierz_granice().top > wysokosc_okna_gry || p->pobierz_granice().top + p->pobierz_granice().height < 0.f;
     }), pociski.end());
+    ========================================================================
     */
+
+    // usuwanie pociskow (poza ekranem, kolizja z platformami, kolizja z graczem)
+    pociski.erase(std::remove_if(pociski.begin(), pociski.end(), [this](const std::unique_ptr<Pocisk>& p) {
+        if (!p) return true;
+
+        //Warunek wyjścia poza ekran
+        if (p->pobierz_granice().top > wysokosc_okna_gry || p->pobierz_granice().top + p->pobierz_granice().height < 0.f)
+            return true;
+
+        // Warunek kolizji z platformami
+        sf::FloatRect pocisk_box = p->pobierz_granice();
+        for (const auto& modul : levels)
+        {
+            if (modul)
+            {
+                for (const auto& platforma : modul->getPlatforms())
+                {
+                    if (pocisk_box.intersects(platforma.getGlobalBounds()))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        if (pocisk_box.intersects(gracz.pobierz_granice()))
+        {
+            gracz.otrzymaj_obrazenia(10);
+            return true; // kolizja z graczem
+        }
+
+        return false;
+    }), pociski.end());
+
 
     { // porusza platfomami i dodaje nowy moduł platform u góry i gdy najniższy moduł zejdzie poniżej zadanej wartości
         if(!levels.empty()){
@@ -275,7 +316,6 @@ void Gra::updateGameplay(float dt){
             }
         }
     }
-
 
     // kolizja z platforma
     sf::FloatRect gracz_box = gracz.pobierz_granice();
@@ -302,6 +342,19 @@ void Gra::updateGameplay(float dt){
         }
     }
 
+
+    {
+        sf::FloatRect gracz_box = gracz.pobierz_granice();
+        for (auto& e : enemies)
+        {
+            if (e && e->pobierz_typ() == TypPrzeciwnika::Goblin && gracz_box.intersects(e->pobierz_granice()))
+            {
+                gracz.otrzymaj_obrazenia(e->pobierz_obrazenia());
+                break;
+            }
+        }
+    }
+
     // usun przeciwnika jezeli zejdzie ponizej ekranu
     enemies.remove_if([this](const std::unique_ptr<Enemy>& e) {
         return e && e->pobierz_granice().top > wysokosc_okna_gry;
@@ -313,19 +366,41 @@ void Gra::generujPrzeciwnikowDlaModulu(LevelModule& modul)
     // generuj przeciwnika z 30% szansy na platformie
     for (const auto& platforma : modul.getPlatforms())
     {
-        // 30% szansy na przeciwnika na danej platformie
+
         if (rand() % 100 < 30)
         {
             sf::FloatRect bounds = platforma.getGlobalBounds();
 
             float enemy_x = bounds.left + (bounds.width / 2.f) - 15.f;
             float enemy_y = bounds.top - 45.f;
+            /*
+            ==========================================
+            STARA GENERACJA PRZECIWNIKA
+            =============================================
             enemies.emplace_back(std::make_unique<Enemy>(
                 sf::Vector2f(enemy_x, enemy_y),
                 bounds.left,
                 bounds.left + bounds.width//,
                 //TypPrzeciwnika::Goblin
             ));
+            ===========================================
+            */
+            if (rand() % 2 == 0)
+            {
+                enemies.emplace_back(std::make_unique<Goblin>(
+                    sf::Vector2f(enemy_x, enemy_y),
+                    bounds.left,
+                    bounds.left + bounds.width
+                ));
+            }
+            else
+            {
+                enemies.emplace_back(std::make_unique<Szkielet>(
+                    sf::Vector2f(enemy_x, enemy_y),
+                    bounds.left,
+                    bounds.left + bounds.width
+                ));
+            }
         }
     }
 }

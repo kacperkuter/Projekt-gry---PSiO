@@ -15,11 +15,12 @@ private:
     float grawitacja;
     float sila_skoku;
 
-    // Statystyki / cechy gracza
+    //cechy gracza
     int punkty_zycia;
     int maks_punkty_zycia;
     int obrazenia_wrecz;
     int obrazenia_dystansowe;
+
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
@@ -35,6 +36,9 @@ public:
     int pobierz_obrazenia_dystansowe() const { return obrazenia_dystansowe; }
     void otrzymaj_obrazenia(int ile) { punkty_zycia -= ile; if (punkty_zycia < 0) punkty_zycia = 0; }
     void ulecz(int ile) { punkty_zycia += ile; if (punkty_zycia > maks_punkty_zycia) punkty_zycia = maks_punkty_zycia; }
+//mam pomysl na bool czy_niewrazliwy() oraz void uruchom_niewrazliwosc, np na poczatku gry aby
+//mozna bylo sobie spokojnie wejsc na platforme zanim zacznei nas gonic potwor jesli to
+//zdazymy zrobic
 
     sf::FloatRect pobierz_granice() const { return ksztalt.getGlobalBounds(); }
     void ustaw_pozycje(float x, float y) { ksztalt.setPosition(x, y); }

@@ -21,6 +21,7 @@ add_executable(TOWER_OF_ASH
     include/leaderboard.h src/leaderboard.cpp
     include/przycisk.h src/przycisk.cpp
     include/przyciskstart.h src/przyciskstart.cpp
+    include/pocisk.h src/pocisk.cpp
 )
 
 # ---- include ----
