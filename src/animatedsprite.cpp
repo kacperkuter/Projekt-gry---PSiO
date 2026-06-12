@@ -13,6 +13,6 @@ void AnimatedSprite::AnimationStep(bool backward){
         return;
 
     }
-    setTextureRect(sf::IntRect(this->getTextureRect().left+(backward*(-1))*getTextureRect().width,getTextureRect().top,getTextureRect().width,getTextureRect().height));
+    setTextureRect(sf::IntRect(this->getTextureRect().left+(backward ? -1 : 1 )*getTextureRect().width,getTextureRect().top,getTextureRect().width,getTextureRect().height));
     return;
 }
