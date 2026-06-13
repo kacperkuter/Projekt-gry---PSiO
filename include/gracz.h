@@ -21,10 +21,11 @@ private:
     int obrazenia_wrecz;
     int obrazenia_dystansowe;
 
-    // Zmienne do ataku wręcz
+    // Zmienne do ataku wręcz i dystansowego
     bool zwrocony_w_prawo;
     float cooldown_ataku;
     float czas_wizualizacji_ataku;
+    float cooldown_strzalu;
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
@@ -45,11 +46,13 @@ public:
     //zdazymy zrobic
 
 
-    //metody ataku wręcz
+    //metody ataku wręcz i dystansowego
     bool moze_atakowac() const { return cooldown_ataku <= 0.f; }
     void wykonaj_atak();
     sf::FloatRect pobierz_zasieg_ataku() const;
     bool czy_atakuje() const { return czas_wizualizacji_ataku > 0.f; }
+    bool moze_strzelic() const { return cooldown_strzalu <= 0.f; }
+    void reset_cooldown_strzalu() { cooldown_strzalu = 0.5f; }
 
     //Poruszanie sie
     sf::FloatRect pobierz_granice() const { return ksztalt.getGlobalBounds(); }
