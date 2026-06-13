@@ -50,7 +50,7 @@ void Enemy::aktualizuj(float dt)
 
 //  nowy konstruktor klasy bazowej Enemy
 Enemy::Enemy(sf::Vector2f pozycja_startowa, float lewa_krawedz, float prawa_krawedz, TypPrzeciwnika t)
-    : typ(t), punkty_zycia(100), obrazenia(10)
+    : typ(t), punkty_zycia(100), obrazenia(10), cooldown_ataku(0.f)
 {
     ksztalt.setSize(sf::Vector2f(30.f, 45.f));
     ksztalt.setFillColor(sf::Color::Red);
@@ -66,6 +66,11 @@ Enemy::Enemy(sf::Vector2f pozycja_startowa, float lewa_krawedz, float prawa_kraw
 //aktualizacja klasy Enemy teraz juz przy uzyciu polimorfizmu
 void Enemy::aktualizuj(float dt, sf::Vector2f pozycja_gracza, std::vector<std::unique_ptr<Pocisk>>& pociski)
 {
+    if (cooldown_ataku > 0.f)
+    {
+        cooldown_ataku -= dt;
+    }
+
     sf::Vector2f pozycja = ksztalt.getPosition();
     
     // Ruch w poziomie

@@ -139,7 +139,58 @@ void Gra::handleMenuEvents(sf::Event& event){
             }
         }
 }
+//atak gracza na blisko
 void Gra::handleGameplayEvents(sf::Event& event){
+    /* STARY KOD - ZAKOMENTOWANY ZGODNIE Z ZALECENIEM
+    if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left)
+    {
+        if (gracz.moze_atakowac())
+        {
+            gracz.wykonaj_atak();
+            sf::FloatRect attack_box = gracz.pobierz_zasieg_ataku();
+
+            for (auto& e : enemies)
+            {
+                if (e && attack_box.intersects(e->pobierz_granice()))
+                {
+                    e->otrzymaj_obrazenia(gracz.pobierz_obrazenia_wrecz());
+                }
+            }
+        }
+    }
+    */
+    if (event.type == sf::Event::MouseButtonPressed)
+    {
+        if (event.mouseButton.button == sf::Mouse::Left)
+        {
+            if (gracz.moze_atakowac())
+            {
+                gracz.wykonaj_atak();
+                sf::FloatRect attack_box = gracz.pobierz_zasieg_ataku();
+
+                for (auto& e : enemies)
+                {
+                    if (e && attack_box.intersects(e->pobierz_granice()))
+                    {
+                        e->otrzymaj_obrazenia(gracz.pobierz_obrazenia_wrecz());
+                    }
+                }
+            }
+        }
+        else if (event.mouseButton.button == sf::Mouse::Right)
+        {
+            if (gracz.moze_strzelic())
+            {
+                sf::Vector2f srodek_gracza = gracz.pobierz_pozycje() + sf::Vector2f(20.f, 30.f); // Środek gracza (rozmiar 40x60)
+                sf::Vector2f pozycja_myszy = gameWindow.mapPixelToCoords(sf::Mouse::getPosition(gameWindow));
+                sf::Vector2f kierunek = pozycja_myszy - srodek_gracza;
+
+                // Tworzymy czerwony pocisk przez gracza
+                pociski.push_back(std::make_unique<Pocisk>(srodek_gracza, kierunek, true, sf::Color::Red));
+                gracz.reset_cooldown_strzalu();
+            }
+        }
+    }
 }
 void Gra::handleGameOverEvents(sf::Event &event){
     {
@@ -289,10 +340,31 @@ z platforma co pozwala zeby pociski przez nia nie przelatywaly i sie nei stackow
             }
         }
 
+        /* STARY KOD - ZAKOMENTOWANY ZGODNIE Z ZALECENIEM
         if (pocisk_box.intersects(gracz.pobierz_granice()))
         {
             gracz.otrzymaj_obrazenia(10);
             return true; // kolizja z graczem
+        }
+        */
+        // Kolizja pocisku wroga z graczem
+        if (!p->czy_przez_gracza() && pocisk_box.intersects(gracz.pobierz_granice()))
+        {
+            gracz.otrzymaj_obrazenia(10); // Obrażenia od pocisku wroga
+            return true; // kolizja z graczem
+        }
+
+        // Kolizja pocisku gracza z przeciwnikami
+        if (p->czy_przez_gracza())
+        {
+            for (auto& e : enemies)
+            {
+                if (e && pocisk_box.intersects(e->pobierz_granice()))
+                {
+                    e->otrzymaj_obrazenia(gracz.pobierz_obrazenia_dystansowe()); // Obrażenia dystansowe gracza
+                    return true; // kolizja z wrogiem
+                }
+            }
         }
 
         return false;
@@ -342,22 +414,32 @@ z platforma co pozwala zeby pociski przez nia nie przelatywaly i sie nei stackow
         }
     }
 
-
+    //atak goblina z cooldownem
     {
         sf::FloatRect gracz_box = gracz.pobierz_granice();
         for (auto& e : enemies)
         {
             if (e && e->pobierz_typ() == TypPrzeciwnika::Goblin && gracz_box.intersects(e->pobierz_granice()))
             {
-                gracz.otrzymaj_obrazenia(e->pobierz_obrazenia());
+                if (e->moze_atakowac())
+                {
+                    gracz.otrzymaj_obrazenia(e->pobierz_obrazenia());
+                    e->uruchom_cooldown_ataku(1.2f); // 1.2 sekundy przerwy przed kolejnym atakiem
+                }
                 break;
             }
         }
     }
 
-    // usun przeciwnika jezeli zejdzie ponizej ekranu
+    // usun przeciwnika jezeli zejdzie ponizej ekranu lub zostanie zabity
+    /*
     enemies.remove_if([this](const std::unique_ptr<Enemy>& e) {
         return e && e->pobierz_granice().top > wysokosc_okna_gry;
+    });
+    */
+
+    enemies.remove_if([this](const std::unique_ptr<Enemy>& e) {
+        return e && (e->czy_martwy() || e->pobierz_granice().top > wysokosc_okna_gry);
     });
     if(gracz.pobierz_hp() <= 0){
         gameOver();

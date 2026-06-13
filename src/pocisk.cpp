@@ -1,10 +1,14 @@
 #include "../include/pocisk.h"
 #include <cmath>
 
-Pocisk::Pocisk(sf::Vector2f pozycja, sf::Vector2f kierunek)
+Pocisk::Pocisk(sf::Vector2f pozycja, sf::Vector2f kierunek, bool przez_gracza, sf::Color kolor)
+    : przez_gracza(przez_gracza)
 {
     ksztalt.setSize(sf::Vector2f(12.f, 4.f));
+    /* STARY KOD - ZAKOMENTOWANY ZGODNIE Z ZALECENIEM
     ksztalt.setFillColor(sf::Color::Yellow); //tak jak wczesniej przeciwnik pocisk zostaje jako zolty prostokat
+    */
+    ksztalt.setFillColor(kolor);
     ksztalt.setPosition(pozycja);
 
 
