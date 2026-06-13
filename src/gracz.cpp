@@ -21,10 +21,11 @@ Gracz::Gracz()
     obrazenia_wrecz = 20;
     obrazenia_dystansowe = 15;
 
-    // Inicjalizacja ataku wręcz
+    // Inicjalizacja ataku wręcz i dystansowego
     zwrocony_w_prawo = true;
     cooldown_ataku = 0.f;
     czas_wizualizacji_ataku = 0.f;
+    cooldown_strzalu = 0.f;
 
 }
 
@@ -61,6 +62,10 @@ void Gracz::aktualizuj(float dt)
     if (czas_wizualizacji_ataku > 0.f)
     {
         czas_wizualizacji_ataku -= dt;
+    }
+    if (cooldown_strzalu > 0.f)
+    {
+        cooldown_strzalu -= dt;
     }
 
     // grawitacja jezeli w powietrzu
