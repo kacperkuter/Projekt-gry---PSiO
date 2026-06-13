@@ -51,7 +51,7 @@ protected:
     //cechy przeciwnika
     int punkty_zycia;
     int obrazenia;
-    float cooldown_ataku; // DODANE: czas do nastepnego mozliwego ataku
+    float cooldown_ataku;
 
     // metoda rysowania
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -60,7 +60,7 @@ public:
     Enemy(sf::Vector2f pozycja_startowa, float lewa_krawedz, float prawa_krawedz, TypPrzeciwnika t);
     virtual ~Enemy() = default;
 
-    //metoda wirtualna aktualizacji kotra przyjmuje pozycję gracza oraz listę pocisków (dla szkieletów)
+    //nowa metoda wirtualna aktualizacj
 
     virtual void aktualizuj(float dt, sf::Vector2f pozycja_gracza, std::vector<std::unique_ptr<Pocisk>>& pociski);
 
@@ -69,6 +69,8 @@ public:
     int pobierz_obrazenia() const { return obrazenia; }
     bool moze_atakowac() const { return cooldown_ataku <= 0.f; }
     void uruchom_cooldown_ataku(float czas) { cooldown_ataku = czas; }
+    void otrzymaj_obrazenia(int ile) { punkty_zycia -= ile; if (punkty_zycia < 0) punkty_zycia = 0; }
+    bool czy_martwy() const { return punkty_zycia <= 0; }
 };
 
 //Goblin(czerwony)
