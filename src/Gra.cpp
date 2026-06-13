@@ -2,8 +2,9 @@
 #include<iostream>
 #include<algorithm>
 
+
 Gra::Gra(int tilenumber) : gameWindow(sf::VideoMode(szerokosc_okna_gry + szerokosc_paska_bocznego, wysokosc_okna_gry), "TowerCLIMB"), tilenumber(tilenumber),
-    pasek_boczny(sf::Vector2f(szerokosc_paska_bocznego,wysokosc_okna_gry),sf::Color(255,193,46))
+    pasek_boczny(sf::Vector2f(szerokosc_paska_bocznego,wysokosc_okna_gry),sf::Color(255,193,46)), przyciskStart(sf::Vector2f(300,150),sf::Text())
 {
     texture_men.set(TextureID::Brick_tile,"../../assets/backgrnd_textr.png");
     texture_men.set(TextureID::Torch,"../../assets/torch.png");
@@ -13,16 +14,15 @@ Gra::Gra(int tilenumber) : gameWindow(sf::VideoMode(szerokosc_okna_gry + szeroko
     render.create(szerokosc_okna_gry,wysokosc_okna_gry);
     texture_men.set(TextureID::Platform,"../../assets/wood1.jpg");
     levels = createLevels(9);
-    for (auto& lvl : levels)
-    {
-        if (lvl)
-            generujPrzeciwnikowDlaModulu(*lvl);
-    }
     pasek_boczny.setPozycja(sf::Vector2f(szerokosc_okna_gry,0));
-    leaderboard.add_wynik("player",200);
-    leaderboard.add_wynik("player 2",100);
+    przyciskStart.setPosition(szerokosc_okna_gry/2.f - przyciskStart.getSize().x / 2.f,wysokosc_okna_gry / 2.f - (przyciskStart.getSize().y + 50.f));
+    font.loadFromFile("../../assets/Open_Sans/OpenSans-VariableFont_wdth,wght.ttf");
+
+    nameText.setFont(font);
+    nameText.setCharacterSize(28);
+    nameText.setFillColor(sf::Color::White);
+
     pasek_boczny.setWynik(leaderboard.get_as_string());
-    zegar.restart();
 }
 
 void Gra::renderOkna(){
@@ -48,26 +48,197 @@ void Gra::renderOkna(){
     }
 
     render.draw(gracz);
+    if(stan == stanGry::Menu){render.draw(przyciskStart);}
+    if(stan == stanGry::GameOver)
+    {
+        sf::Text title;
+        title.setFont(font);
+        title.setString("GAME OVER");
+        title.setCharacterSize(40);
+        title.setPosition(250.f, 150.f);
+
+        sf::Text prompt;
+        prompt.setFont(font);
+        prompt.setString("Enter name:");
+        prompt.setCharacterSize(25);
+        prompt.setPosition(250.f, 250.f);
+
+        nameText.setString(enteredName);
+        nameText.setPosition(250.f, 300.f);
+
+        render.draw(title);
+        render.draw(prompt);
+        render.draw(nameText);
+    }
     render.display();
 
     gameWindow.clear();
     sf::Sprite oknogry(render.getTexture());
     gameWindow.draw(oknogry);
+
+    // Aktualizacja paska HP
+    pasek_boczny.aktualizujHP(gracz.pobierz_hp(), gracz.pobierz_maks_hp());
+
     gameWindow.draw(pasek_boczny);
     gameWindow.display();
 }
 
 void Gra::handleEvents(){
-    float dt = zegar.restart().asSeconds();
     sf::Event event;
     while (gameWindow.pollEvent(event)) {
         if (event.type == sf::Event::Closed)
             gameWindow.close();
+        switch(stan){
+        case Gra::stanGry::Menu: {
+            handleMenuEvents(event);
+            break;
+        }
+        case Gra::stanGry::Rozgrywka:{
+            handleGameplayEvents(event);
+            break;
+        }
+        case Gra::stanGry::GameOver:{
+            handleGameOverEvents(event);
+            break;
+        }
+        }
+    }
+}
+void Gra::updateGame(float dt){
+
+    switch (stan) {
+    case stanGry::Rozgrywka:{
+        updateGameplay(dt);
+        animacjaTla();
+        break;
+    }
+    case stanGry::Menu:{
+        animacjaTla();
+        break;
+    }
+    case stanGry::GameOver:{
+
+        break;
+    }
+    default:
+        break;
+    }
+}
+
+void Gra::handleMenuEvents(sf::Event& event){
+        if(event.type == sf::Event::MouseButtonPressed)
+        {
+            sf::Vector2f mousePos =
+                gameWindow.mapPixelToCoords(
+                    sf::Mouse::getPosition(gameWindow)
+                    );
+
+            if(przyciskStart.getGlobalBounds().contains(mousePos))
+            {
+                startGameplay();
+            }
+        }
+}
+void Gra::handleGameplayEvents(sf::Event& event){
+}
+void Gra::handleGameOverEvents(sf::Event &event){
+    {
+        if(event.type == sf::Event::Closed){
+                gameWindow.close();
+        }
+        if(event.type == sf::Event::TextEntered)
+        {
+            char c = static_cast<char>(event.text.unicode);
+
+            // BACKSPACE
+            if(c == 8)
+            {
+                if(!enteredName.empty())
+                    enteredName.pop_back();
+            }
+            // NORMALNE ZNAKI
+            else if(c >= 32 && c <= 126)
+            {
+                if(enteredName.size() < 12)
+                    enteredName += c;
+            }
+        }
+
+        // ENTER = zapis
+        if(event.type == sf::Event::KeyPressed &&
+            event.key.code == sf::Keyboard::Enter)
+        {
+            if(enteredName.empty())
+            { enteredName = "Player";}
+
+            leaderboard.add_wynik(enteredName, wynik);
+            resetGame();
+            }
     }
 
+}
+
+
+LevelModule Gra::createLevel(const float& position){ // tworzy nowy moduł platform o losowym ustawieniu
+    std::vector<bool> platforms;
+    for(int i = 0;i < tilenumber; ++i){
+        platforms.emplace_back(rand()%2);
+    }
+    if(std::all_of(platforms.begin(),platforms.end(),[](const auto& a){return a!=true;})){ platforms[rand()%tilenumber] = 1; }
+    else if(std::all_of(platforms.begin(),platforms.end(),[](const auto & a){return a==true;})){ platforms[rand()%tilenumber] = 0; }
+    for(auto p : platforms){
+        std::cout<<p;
+    }
+    std::cout<<std::endl;
+
+    return LevelModule(sf::Vector2f(szerokosc_okna_gry,wysokosc_okna_gry/tilenumber),&texture_men.load(TextureID::Platform),&texture_men.load(TextureID::Torch),sf::IntRect(0,0,32,32),platforms,position);
+}
+
+std::list<std::unique_ptr<LevelModule>> Gra::createLevels(unsigned int nolevels){ // tworzy n początkowych modułów platform
+    std::list<std::unique_ptr<LevelModule>> list;
+    for(unsigned int i = 0; i < nolevels; ++i){
+        list.emplace_front(std::make_unique<LevelModule>(createLevel(i)));
+    }
+    return list;
+}
+void Gra::startGameplay()
+{
+    enemies.clear();
+    wynik = 0;
+
+    for(auto lvl = levels.begin();*lvl!=levels.back();lvl++)
+    {
+        generujPrzeciwnikowDlaModulu(*lvl->get());
+    }
+    pasek_boczny.setWynik(leaderboard.get_as_string());
+
+    stan = stanGry::Rozgrywka;
+}
+void Gra::gameOver(){
+    stan = stanGry::GameOver;
+    enteredName.clear();
+    enemies.clear();
+}
+void Gra::resetGame()
+{
+    enemies.clear();
+    wynik = 0;
+
+    gracz = Gracz();
+
+    levels = createLevels(9);
+    pasek_boczny.setWynik(leaderboard.get_as_string());
+    stan = stanGry::Menu;
+}
+void Gra::animacjaTla(){
+    for(auto& a : levels){
+        a->animate();
+    }
+}
+
+void Gra::updateGameplay(float dt){
     gracz.obsluz_sterowanie();
     gracz.aktualizuj(dt);
-
     for (auto& e : enemies)
     {
         if (e)
@@ -94,20 +265,15 @@ z platforma co pozwala zeby pociski przez nia nie przelatywaly i sie nei stackow
     ========================================================================
     */
 
-    /*
-    ========================================================================
-    STARE USUWANIE POCISKÓW WRAZ Z KOLIZJAMI Z PLATFORMAMI (ZAKOMENTOWANE ZGODNIE Z ZALECENIEM)
-    Ten kod usuwał pociski przy wyjściu za ekran oraz po zderzeniu z platformami.
-    ========================================================================
-    // usuwanie pociskow (poza ekranem oraz przy kolizji z platformami)
+    // usuwanie pociskow (poza ekranem, kolizja z platformami, kolizja z graczem)
     pociski.erase(std::remove_if(pociski.begin(), pociski.end(), [this](const std::unique_ptr<Pocisk>& p) {
         if (!p) return true;
 
-        // 1. Warunek wyjścia poza ekran
+        //Warunek wyjścia poza ekran
         if (p->pobierz_granice().top > wysokosc_okna_gry || p->pobierz_granice().top + p->pobierz_granice().height < 0.f)
             return true;
 
-        // 2. Warunek kolizji z platformami
+        // Warunek kolizji z platformami
         sf::FloatRect pocisk_box = p->pobierz_granice();
         for (const auto& modul : levels)
         {
@@ -123,39 +289,10 @@ z platforma co pozwala zeby pociski przez nia nie przelatywaly i sie nei stackow
             }
         }
 
-        return false;
-    }), pociski.end());
-    ========================================================================
-    */
-
-    // usuwanie pociskow (poza ekranem, kolizja z platformami, kolizja z graczem)
-    pociski.erase(std::remove_if(pociski.begin(), pociski.end(), [this](const std::unique_ptr<Pocisk>& p) {
-        if (!p) return true;
-
-        // 1. Warunek wyjścia poza ekran
-        if (p->pobierz_granice().top > wysokosc_okna_gry || p->pobierz_granice().top + p->pobierz_granice().height < 0.f)
-            return true;
-
-        // 2. Warunek kolizji z platformami
-        sf::FloatRect pocisk_box = p->pobierz_granice();
-        for (const auto& modul : levels)
-        {
-            if (modul)
-            {
-                for (const auto& platforma : modul->getPlatforms())
-                {
-                    if (pocisk_box.intersects(platforma.getGlobalBounds()))
-                    {
-                        return true; // kolizja z platformą - usuń pocisk
-                    }
-                }
-            }
-        }
-
         if (pocisk_box.intersects(gracz.pobierz_granice()))
         {
-            gracz.otrzymaj_obrazenia(10); // Obrażenia od pocisku szkieleta
-            return true; // kolizja z graczem - usuń pocisk
+            gracz.otrzymaj_obrazenia(10);
+            return true; // kolizja z graczem
         }
 
         return false;
@@ -170,12 +307,13 @@ z platforma co pozwala zeby pociski przez nia nie przelatywaly i sie nei stackow
 
                 }
             }
-                if(levels.begin()->get()->getBoundry().getPosition().y > wysokosc_okna_gry + 2*(levels.begin()->get()->getBoundry().getSize().y)){
-                    levels.pop_front();
-                    auto nowy_modul = std::make_unique<LevelModule>(createLevel());
-                    generujPrzeciwnikowDlaModulu(*nowy_modul);
-                    levels.emplace_back(std::move(nowy_modul));
-                }
+            if(levels.begin()->get()->getBoundry().getPosition().y > wysokosc_okna_gry + 2*(levels.begin()->get()->getBoundry().getSize().y)){
+                levels.pop_front();
+                auto nowy_modul = std::make_unique<LevelModule>(createLevel());
+                generujPrzeciwnikowDlaModulu(*nowy_modul);
+                levels.emplace_back(std::move(nowy_modul));
+                wynik++;
+            }
         }
     }
 
@@ -191,7 +329,7 @@ z platforma co pozwala zeby pociski przez nia nie przelatywaly i sie nei stackow
                 if (gracz_box.intersects(platforma_box))
                 {
                     float poprzedni_spod = gracz_box.top + gracz_box.height - (gracz.pobierz_predkosc().y * dt);
-                    
+
                     if (gracz.pobierz_predkosc().y >= 0.f && poprzedni_spod <= platforma_box.top + 10.f)
                     {
                         gracz.ustaw_pozycje(gracz_box.left, platforma_box.top - gracz_box.height);
@@ -221,30 +359,9 @@ z platforma co pozwala zeby pociski przez nia nie przelatywaly i sie nei stackow
     enemies.remove_if([this](const std::unique_ptr<Enemy>& e) {
         return e && e->pobierz_granice().top > wysokosc_okna_gry;
     });
-
-}
-
-LevelModule Gra::createLevel(const float& position){ // tworzy nowy moduł platform o losowym ustawieniu
-    std::vector<bool> platforms;
-    for(int i = 0;i < tilenumber; ++i){
-        platforms.emplace_back(rand()%2);
+    if(gracz.pobierz_hp() <= 0){
+        gameOver();
     }
-    if(std::all_of(platforms.begin(),platforms.end(),[](const auto& a){return a!=true;})){ platforms[rand()%tilenumber] = 1; }
-    else if(std::all_of(platforms.begin(),platforms.end(),[](const auto & a){return a==true;})){ platforms[rand()%tilenumber] = 0; }
-    for(auto p : platforms){
-        std::cout<<p;
-    }
-    std::cout<<std::endl;
-
-    return LevelModule(sf::Vector2f(szerokosc_okna_gry,wysokosc_okna_gry/tilenumber),&texture_men.load(TextureID::Platform),&texture_men.load(TextureID::Torch),sf::IntRect(0,0,32,32),platforms,position);
-}
-
-std::list<std::unique_ptr<LevelModule>> Gra::createLevels(unsigned int nolevels){ // tworzy n początkowych modułów platform
-    std::list<std::unique_ptr<LevelModule>> list;
-    for(unsigned int i = 0; i < nolevels; ++i){
-        list.emplace_front(std::make_unique<LevelModule>(createLevel(i)));
-    }
-    return list;
 }
 
 void Gra::generujPrzeciwnikowDlaModulu(LevelModule& modul)
@@ -252,7 +369,7 @@ void Gra::generujPrzeciwnikowDlaModulu(LevelModule& modul)
     // generuj przeciwnika z 30% szansy na platformie
     for (const auto& platforma : modul.getPlatforms())
     {
-        // 30% szansy na przeciwnika na danej platformie
+
         if (rand() % 100 < 30)
         {
             sf::FloatRect bounds = platforma.getGlobalBounds();
@@ -266,8 +383,8 @@ void Gra::generujPrzeciwnikowDlaModulu(LevelModule& modul)
             enemies.emplace_back(std::make_unique<Enemy>(
                 sf::Vector2f(enemy_x, enemy_y),
                 bounds.left,
-                bounds.left + bounds.width,
-                TypPrzeciwnika::Goblin
+                bounds.left + bounds.width//,
+                //TypPrzeciwnika::Goblin
             ));
             ===========================================
             */

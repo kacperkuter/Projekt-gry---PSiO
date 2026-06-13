@@ -17,9 +17,11 @@ add_executable(TOWER_OF_ASH
     include/levelmodule.h src/levelmodule.cpp
     include/gracz.h src/gracz.cpp
     include/enemy.h src/enemy.cpp
-    include/pocisk.h src/pocisk.cpp
-    include/leaderboard.h src/leaderboard.cpp
     include/pasek_boczny.h src/pasek_boczny.cpp
+    include/leaderboard.h src/leaderboard.cpp
+    include/przycisk.h src/przycisk.cpp
+    include/przyciskstart.h src/przyciskstart.cpp
+    include/pocisk.h src/pocisk.cpp
 )
 
 # ---- include ----
