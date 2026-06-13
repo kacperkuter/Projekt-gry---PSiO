@@ -51,6 +51,7 @@ protected:
     //cechy przeciwnika
     int punkty_zycia;
     int obrazenia;
+    float cooldown_ataku; // DODANE: czas do nastepnego mozliwego ataku
 
     // metoda rysowania
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -66,6 +67,8 @@ public:
     sf::FloatRect pobierz_granice() const { return ksztalt.getGlobalBounds(); }
     TypPrzeciwnika pobierz_typ() const { return typ; }
     int pobierz_obrazenia() const { return obrazenia; }
+    bool moze_atakowac() const { return cooldown_ataku <= 0.f; }
+    void uruchom_cooldown_ataku(float czas) { cooldown_ataku = czas; }
 };
 
 //Goblin(czerwony)
